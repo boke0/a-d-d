@@ -23,6 +23,10 @@ type User struct {
 }
 
 type UserCreateParam struct {
+	ScreenName string
+	Name string
+	Description string
+	Icon string
 	GithubUserId uint
 	GithubAccessToken string
 }

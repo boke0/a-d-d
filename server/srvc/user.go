@@ -13,6 +13,10 @@ var (
 
 func UserCreate(params model.UserCreateParam) (model.User, error) {
 	user := model.User {
+		ScreenName: params.ScreenName,
+		Name: params.Name,
+		Icon: params.Icon,
+		Description: params.Description,
 		GithubUserId: params.GithubUserId,
 		GithubAccessToken: params.GithubAccessToken,
 	}
@@ -70,6 +74,10 @@ func Login(params model.LoginParams) (string, error) {
 	result := Db.Where("GithubUserId", githubUser.Id).First(&user)
 	if result.Error != nil {
 		user, err := UserCreate(model.UserCreateParam{
+			Name: githubUser.Name,
+			ScreenName: githubUser.Login,
+			Description: githubUser.Bio,
+			Icon: githubUser.AvatarUrl,
 			GithubAccessToken: token,
 			GithubUserId: githubUser.Id,
 		})
