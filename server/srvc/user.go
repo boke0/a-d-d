@@ -11,7 +11,7 @@ var (
 	github_client_secret = os.Getenv("GITHUB_CLIENT_SECRET")
 )
 
-func UserCreate(params model.UserCreateParam) (model.User, error) {
+func UserCreate(params model.CreateUserParam) (model.User, error) {
 	user := model.User {
 		ScreenName: params.ScreenName,
 		Name: params.Name,
@@ -36,6 +36,13 @@ func UserUpdate(loginUser model.User, params model.UpdateUserParam) (model.User,
 	user.Name = params.Name
 	user.Description = params.Description
 	user.Icon = params.Icon
+	result := Db.Save(&user)
+	return user, result.Error
+}
+
+func UserUpdateGithubAccessToken(loginUser model.User, params model.UpdateUserAccessTokenParam) (model.User, error) {
+	var user model.User
+	user.GithubAccessToken = params.GithubAccessToken
 	result := Db.Save(&user)
 	return user, result.Error
 }
@@ -73,7 +80,7 @@ func Login(params model.LoginParams) (string, error) {
 	}
 	result := Db.Where("GithubUserId", githubUser.Id).First(&user)
 	if result.Error != nil {
-		user, err := UserCreate(model.UserCreateParam{
+		user, err := UserCreate(model.CreateUserParam{
 			Name: githubUser.Name,
 			ScreenName: githubUser.Login,
 			Description: githubUser.Bio,
@@ -86,6 +93,9 @@ func Login(params model.LoginParams) (string, error) {
 		}
 		return model.GenerateJwtToken(user), nil
 	}else{
-		return model.GenerateJwtToken(user), nil
+		user, err := UserUpdateGithubAccessToken(user, model.UpdateUserAccessTokenParam {
+			GithubAccessToken: token,
+		})
+		return model.GenerateJwtToken(user), err
 	}
 }

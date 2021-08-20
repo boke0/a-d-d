@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
+	"server/excp"
 )
 
 type User struct {
@@ -22,7 +24,7 @@ type User struct {
 	Works []Work
 }
 
-type UserCreateParam struct {
+type CreateUserParam struct {
 	ScreenName string
 	Name string
 	Description string
@@ -36,6 +38,10 @@ type UpdateUserParam struct {
 	Name string
 	Description string
 	Icon string
+}
+
+type UpdateUserAccessTokenParam struct {
+	GithubAccessToken string
 }
 
 type LoginParams struct {
@@ -57,6 +63,12 @@ type GithubUserResponse struct {
 type Auth struct {
 	Id uint `json: "id"`
 	jwt.StandardClaims
+}
+
+func GetLoginUser(c *gin.Context) User {
+	contextLoginUser, _ := c.Get("LoginUser")
+	loginUser, _ := contextLoginUser.(model.User)
+	return loginUser
 }
 
 func GithubAuth(code string) (string, error) {
@@ -104,7 +116,7 @@ func GetGithubUser(token string) (GithubUserResponse, error) {
 }
 
 func GenerateJwtToken(user User) string {
-	token := jwt.NewWithClaims(jwt.GetSignedMethod("HS256"), &Auth{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Auth{
 		Id: user.ID,
 	})
 	tokenstr, err := token.SignedString([]byte(os.Getenv("AUTH_SECRET")))
@@ -115,9 +127,14 @@ func GenerateJwtToken(user User) string {
 }
 
 func AuthJwtToken(tokenstr string) (uint, error) {
-	token, err := jwt.Parse(tokenstr)
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["id"], nil
+	token, err := jwt.Parse(tokenstr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, exception.InvalidToken
+		}
+		return []byte(os.Getenv("AUTH_SECRET")), nil
+	})
+	if claims, ok := token.Claims.(Auth); ok && token.Valid {
+		return claims.Id, nil
 	}else{
 		return 1, err
 	}
