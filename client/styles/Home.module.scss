@@ -1,0 +1,12 @@
+.container {
+  .headers {
+    height: 72px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    h1 {
+      margin: 0;
+    }
+  }
+}

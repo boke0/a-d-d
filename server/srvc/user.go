@@ -1,18 +1,11 @@
 package service
 
 import (
-	"os"
-	"server/mdl"
-	"server/excp"
+	. "server/mdl"
 )
 
-var (
-	github_client_id = os.Getenv("GITHUB_CLIENT_ID")
-	github_client_secret = os.Getenv("GITHUB_CLIENT_SECRET")
-)
-
-func UserCreate(params model.CreateUserParam) (model.User, error) {
-	user := model.User {
+func UserCreate(params CreateUserParam) (User, error) {
+	user := User {
 		ScreenName: params.ScreenName,
 		Name: params.Name,
 		Icon: params.Icon,
@@ -20,18 +13,18 @@ func UserCreate(params model.CreateUserParam) (model.User, error) {
 		GithubUserId: params.GithubUserId,
 		GithubAccessToken: params.GithubAccessToken,
 	}
-	result := Db.Create(user)
+	result := Db.Create(&user)
 	return user, result.Error
 }
 
-func UserRead(id uint) (model.User, error) {
-	var user model.User
+func UserRead(id uint) (User, error) {
+	var user User
 	result := Db.First(&user, id)
 	return user, result.Error
 }
 
-func UserUpdate(loginUser model.User, params model.UpdateUserParam) (model.User, error) {
-	var user model.User
+func UserUpdate(loginUser User, params UpdateUserParam) (User, error) {
+	var user User
 	user.ScreenName = params.ScreenName
 	user.Name = params.Name
 	user.Description = params.Description
@@ -40,47 +33,47 @@ func UserUpdate(loginUser model.User, params model.UpdateUserParam) (model.User,
 	return user, result.Error
 }
 
-func UserUpdateGithubAccessToken(loginUser model.User, params model.UpdateUserAccessTokenParam) (model.User, error) {
-	var user model.User
+func UserUpdateGithubAccessToken(loginUser User, params UpdateUserAccessTokenParam) (User, error) {
+	var user User
 	user.GithubAccessToken = params.GithubAccessToken
 	result := Db.Save(&user)
 	return user, result.Error
 }
 
-func UserDelete(loginUser model.User) (model.User, error) {
+func UserDelete(loginUser User) (User, error) {
 	result := Db.Delete(&loginUser)
 	return loginUser, result.Error
 }
 
-func UserList() ([]model.User, error) {
-	var users []model.User
+func UserList() ([]User, error) {
+	var users []User
 	result := Db.Find(&users)
 	return users, result.Error
 }
 
-func Authorize(auth string) (model.User, error) {
-	var user model.User
-	id, err := model.AuthJwtToken(auth)
+func Authorize(auth string) (User, error) {
+	var user User
+	id, err := AuthJwtToken(auth)
 	if err != nil {
-		return model.User{}, nil
+		return User{}, nil
 	}
-	result := Db.Find(&user, id)
+	result := Db.First(&user, id)
 	return user, result.Error
 }
 
-func Login(params model.LoginParams) (string, error) {
-	var user model.User
-	token, err := model.GithubAuth(params.Code)
-	if err != nil {
-		return "", exception.Unauthorized
-	}
-	githubUser, err := model.GetGithubUser(token)
+func Login(params LoginParams) (string, error) {
+	var user User
+	token, err := GithubAuth(params.Code)
 	if err != nil {
 		return "", err
 	}
-	result := Db.Where("GithubUserId", githubUser.Id).First(&user)
+	githubUser, err := GetGithubUser(token)
+	if err != nil {
+		return "", err
+	}
+	result := Db.Where(&User{ GithubUserId: githubUser.Id }).First(&user)
 	if result.Error != nil {
-		user, err := UserCreate(model.CreateUserParam{
+		user, err := UserCreate(CreateUserParam{
 			Name: githubUser.Name,
 			ScreenName: githubUser.Login,
 			Description: githubUser.Bio,
@@ -91,11 +84,11 @@ func Login(params model.LoginParams) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return model.GenerateJwtToken(user), nil
+		return GenerateJwtToken(user), nil
 	}else{
-		user, err := UserUpdateGithubAccessToken(user, model.UpdateUserAccessTokenParam {
+		user, err := UserUpdateGithubAccessToken(user, UpdateUserAccessTokenParam {
 			GithubAccessToken: token,
 		})
-		return model.GenerateJwtToken(user), err
+		return GenerateJwtToken(user), err
 	}
 }
