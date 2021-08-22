@@ -20,16 +20,13 @@ func WorkCreate(loginUser User, params CreateWorkParam) (Work, error) {
 
 func WorkRead(id uint) (Work, error) {
 	var work Work
-	result := Db.First(&work, id)
+	result := Db.Preload("User").Preload("Drinks").First(&work, id)
 	return work, result.Error
 }
 
 func WorkInProgressRead(loginUser User) (Work, error) {
 	var work Work
-	var drinks []Drink
-	result := Db.Where("end_time IS NULL AND user_id = ?", loginUser.ID).First(&work)
-	Db.Model(&work).Association("Drinks").Find(&drinks)
-	work.Drinks = drinks
+	result := Db.Preload("Drinks").Where("end_time IS NULL AND user_id = ?", loginUser.ID).First(&work)
 	return work, result.Error
 }
 
@@ -58,7 +55,7 @@ func WorkDelete(loginUser User, id uint) (Work, error) {
 
 func WorkList() ([]Work, error) {
 	var works []Work
-	result := Db.Find(&works)
+	result := Db.Preload("User").Preload("Drinks").Find(&works)
 	return works, result.Error
 }
 
@@ -101,7 +98,6 @@ func DrinkDelete(loginUser User, workId uint, id uint) (Drink, error) {
 
 func DrinkList(workId uint) ([]Drink, error) {
 	var work Work
-	var drinks []Drink
-	err := Db.Find(&work, workId).Association("Drinks").Find(&drinks)
-	return drinks, err
+	result := Db.Preload("Drinks").Find(&work, workId)
+	return work.Drinks, result.Error
 }

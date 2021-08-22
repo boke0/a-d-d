@@ -1,0 +1,64 @@
+@import "variables.scss";
+
+.container {
+  .linedProfile {
+    display: grid;
+    grid-gap: 16px;
+    height: 56px;
+    padding: 8px;
+    grid-template-columns: 40px 1fr;
+    align-items: center;
+    width: 100%;
+    font-size: 0.9rem;
+    font-weight: bold;
+    .icon {
+      width: 40px;
+      height: 40px;
+      img {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  }
+  .details {
+    .currentTime {
+      font-size: 3rem;
+    }
+    .buttons {
+      margin-top: 32px;
+    }
+    dt {
+    }
+    dd {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  }
+  .drinks {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    .drinkList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-gap: 8px;
+      .drinkItem {
+        border: 2px solid $primary;
+        border-radius: 8px;
+        padding: 16px;
+        span {
+          font-size: 0.8rem;
+          color: #555;
+        }
+        h4 {
+          margin: 8px 0 12px;
+        }
+        p {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+  }
+
+}

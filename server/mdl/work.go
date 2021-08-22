@@ -9,10 +9,10 @@ type Work struct {
 	gorm.Model
 	Title string
 	Description string
-	UserId uint
+	UserId uint `gorm:"index"`
 	User User
 	StartTime time.Time `gorm:"type:datetime(6)"` 
-	EndTime *time.Time `gorm:"type:datetime(6)" json:"end_time"` 
+	EndTime *time.Time `gorm:"type:datetime(6)" gorm:"index"` 
 	Drinks []Drink
 }
 

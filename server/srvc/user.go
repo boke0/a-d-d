@@ -19,7 +19,13 @@ func UserCreate(params CreateUserParam) (User, error) {
 
 func UserRead(id uint) (User, error) {
 	var user User
-	result := Db.First(&user, id)
+	result := Db.Preload("Works").Preload("Works.Drinks").First(&user, id)
+	return user, result.Error
+}
+
+func UserReadByScreenName(screenName string) (User, error) {
+	var user User
+	result := Db.Preload("Works").Preload("Works.Drinks").First(&user, &User{ ScreenName: screenName })
 	return user, result.Error
 }
 

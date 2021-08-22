@@ -7,7 +7,7 @@ import axios from '../axios';
 const PREPARE = 0;
 const IN_PROGRESS = 1;
 
-export default function Timer() {
+export default function Timer({ isLoggedIn, loginUser }) {
   const router = useRouter();
   const [phase, setPhase] = useState(0);
   const startTime = useRef(new Date());
@@ -36,8 +36,10 @@ export default function Timer() {
       ]
     }).then(res => {
       setPhase(IN_PROGRESS);
-      setStartTime(new Date());
-      setDrinks(res.data.Work.drinks)
+      startTime.current = new Date();
+      setDrinks(res.data.Work.Drinks)
+      setTitle(res.data.Work.Title)
+      setDescription(res.data.Work.Description)
       workId.current = res.data.Work.ID;
     });
   }
@@ -66,11 +68,16 @@ export default function Timer() {
   const end = () => {
     axios.put('/works/' + workId.current, {
       end_time: new Date().toISOString(),
+      title: title,
+      description: description,
     }).then(res => {
       router.push('/works/' + workId.current)
     });
   }
   useEffect(() => {
+    if(!isLoggedIn){
+      location.href = `https://github.com/login/oauth/authorize?scope=user,repo&client_id=${process.env.GITHUB_CLIENT_ID}`;
+    }
     axios.get('/works/in_progress').then(res => {
       setPhase(IN_PROGRESS);
       const [ymd, his] = res.data.Work.StartTime.split('T');
@@ -84,6 +91,8 @@ export default function Timer() {
       date.setUTCSeconds(Number(s))
       startTime.current = date;
       setDrinks(res.data.Work.Drinks)
+      setTitle(res.data.Work.Title)
+      setDescription(res.data.Work.Description)
       workId.current = res.data.Work.ID;
     }).catch(() => {
       setPhase(PREPARE);
@@ -147,7 +156,7 @@ export default function Timer() {
           <div className={`${styles.modal} ${open ? styles.show : ''}`}>
             <div className={styles.overlay} onClick={close}></div>
             <div className={`${styles.drinkform} ${styles.modalInner}`}>
-              <h2 className={styles.title}></h2>
+              <h2 className={styles.title}>{title}</h2>
               <input type='text' value={drinkName} onInput={(e) => setDrinkName(e.target.value)} placeholder='お酒の銘柄' />
               <input type='number' value={drinkAlcohol} onInput={(e) => setDrinkAlcohol(e.target.value)} placeholder='アルコール度数(%)'/>
               <input type='number' value={drinkAmount} onInput={(e) => setDrinkAmount(e.target.value)} placeholder='量(ml)'/>

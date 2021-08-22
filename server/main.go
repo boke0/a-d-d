@@ -42,6 +42,7 @@ func main() {
 		auth := v1.Group("/")
 		{
 			auth.Use(middleware.Auth)
+			auth.GET("/session", controller.Session)
 			auth.PUT("/users/:user", controller.UserUpdate)
 			auth.DELETE("/users/:user", controller.UserDelete)
 			auth.POST("/works", controller.WorkCreate)

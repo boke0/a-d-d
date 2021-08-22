@@ -23,10 +23,10 @@ var (
 
 type User struct {
 	gorm.Model
-	ScreenName string
+	ScreenName string `gorm:"index"`
 	Name string
 	Description string
-	GithubUserId uint `json:"-"`
+	GithubUserId uint `gorm:"index:uniqueIndex" json:"-"`
 	GithubAccessToken string `json:"-"`
 	Icon string
 	Works []Work

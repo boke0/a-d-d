@@ -1,0 +1,35 @@
+.container {
+  height: 72px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  h1 {
+    margin: 0;
+  }
+  .left {
+    display: grid;
+    align-items: center;
+    grid-auto-flow: column;
+    grid-gap: 8px;
+    .profile {
+      display: inline-grid;
+      height: 48px;
+      grid-template-columns: 32px 1fr;
+      grid-template-rows: 32px;
+      grid-gap: 8px;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 8px 24px 8px 8px;
+      border-radius: 24px;
+      background: #efefef;
+      .icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+      }
+    }
+
+  }
+}

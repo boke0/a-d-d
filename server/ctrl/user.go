@@ -11,8 +11,14 @@ import (
 )
 
 func UserRead(c *gin.Context) {
-	userId, _ := strconv.ParseUint(c.Param("user"), 10, 64)
-	user, err := service.UserRead(uint(userId))
+	userIdStr := c.Param("user")
+	userId, err := strconv.ParseUint(userIdStr, 10, 64)
+	var user User
+	if err != nil {
+		user, err = service.UserReadByScreenName(userIdStr)
+	}else{
+		user, err = service.UserRead(uint(userId))
+	}
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "failure",
@@ -78,6 +84,14 @@ func UserList(c *gin.Context) {
 			"Users": users,
 		})
 	}
+}
+
+func Session(c *gin.Context) {
+	user, _ := c.Get("LoginUser")
+	user = user.(User)
+	c.JSON(http.StatusOK, gin.H{
+		"User": user,
+	})
 }
 
 func Login(c *gin.Context) {
