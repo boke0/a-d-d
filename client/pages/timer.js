@@ -137,7 +137,8 @@ export default function Timer({ isLoggedIn, loginUser }) {
               </div>
               <div className={styles.buttons}>
                 <Btn onClick={openmodal} style={{ marginRight: 8 }}>もう一杯！</Btn>
-                <Btn onClick={e => setChecking(true)}>開発終了</Btn>
+                {/*<Btn onClick={e => setChecking(true)}>開発終了</Btn>*/}
+                <Btn onClick={end}>開発終了</Btn>
               </div>
             </div>
             <div className={styles.drinks}>
@@ -166,6 +167,7 @@ export default function Timer({ isLoggedIn, loginUser }) {
               </div>
             </div>
           </div>
+          {/*
           <div className={`${styles.modal} ${checking ? styles.show : ''}`}>
             <div className={styles.overlay} onClick={close}></div>
             <div className={`${styles.drinkform} ${styles.modalInner}`}>
@@ -177,6 +179,7 @@ export default function Timer({ isLoggedIn, loginUser }) {
               </div>
             </div>
           </div>
+          */}
         </>
       )
   }
