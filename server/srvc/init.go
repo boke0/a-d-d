@@ -5,12 +5,13 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"errors"
+	"os"
 )
 
 var Db *gorm.DB
 
-const (
-	dsn = "add:password@tcp(127.0.0.1:3306)/hogehoge?charset=utf8mb4&parseTime=True"
+var (
+	dsn = os.Getenv("MYSQL_USER")+":"+os.Getenv("MYSQL_PASSWORD")+"@tcp("+os.Getenv("MYSQL_HOST")+":3306)/"+os.Getenv("MYSQL_DATABASE")+"?charset=utf8mb4&parseTime=True"
 )
 
 func init() {
