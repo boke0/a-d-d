@@ -1,28 +1,23 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	. "server/mdl"
 	"server/srvc"
 	"strconv"
+	"github.com/go-chi/chi/render"
 )
 
-func WorkCreate(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func WorkCreate(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User)
 	var req CreateWorkParam
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+	if err := render.Bind(r, &req); err != nil {
+		render.Render(w, r, CreateErrorResponse(err))
 	}
 	work, err := service.WorkCreate(loginUser, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -31,14 +26,11 @@ func WorkCreate(c *gin.Context) {
 	})
 }
 
-func WorkRead(c *gin.Context) {
+func WorkRead(w http.ResponseWriter, r *http.Request) {
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	work, err := service.WorkRead(uint(workId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -47,14 +39,12 @@ func WorkRead(c *gin.Context) {
 	})
 }
 
-func WorkInProgressRead(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func WorkInProgressRead(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User)
 	work, err := service.WorkInProgressRead(loginUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -63,22 +53,18 @@ func WorkInProgressRead(c *gin.Context) {
 	})
 }
 
-func WorkUpdate(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func WorkUpdate(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User)
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	var req UpdateWorkParam
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+	if err := render.Bind(r, &req); err != nil {
+		render.Render(w, r, CreateErrorResponse(err))
+		return
 	}
 	work, err := service.WorkUpdate(loginUser, uint(workId), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -87,15 +73,13 @@ func WorkUpdate(c *gin.Context) {
 	})
 }
 
-func WorkDelete(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func WorkDelete(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User)
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	work, err := service.WorkDelete(loginUser, uint(workId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -104,13 +88,10 @@ func WorkDelete(c *gin.Context) {
 	})
 }
 
-func WorkList(c *gin.Context) {
+func WorkList(w http.ResponseWriter, r *http.Request) {
 	works, err := service.WorkList()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -119,22 +100,17 @@ func WorkList(c *gin.Context) {
 	})
 }
 
-func DrinkCreate(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func DrinkCreate(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	var req CreateDrinkParam
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+	if err := render.Bind(r, &req); err != nil {
+		render.Render(w, r, CreateErrorResponse(err))
+		return
 	}
 	drink, err := service.DrinkCreate(loginUser, uint(workId), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -143,15 +119,12 @@ func DrinkCreate(c *gin.Context) {
 	})
 }
 
-func DrinkRead(c *gin.Context) {
+func DrinkRead(w http.ResponseWriter, r *http.Request) {
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	drinkId, _ := strconv.ParseUint(c.Param("drink"), 10, 64)
 	drink, err := service.DrinkRead(uint(workId), uint(drinkId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -160,23 +133,19 @@ func DrinkRead(c *gin.Context) {
 	})
 }
 
-func DrinkUpdate(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func DrinkUpdate(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User)
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	drinkId, _ := strconv.ParseUint(c.Param("drink"), 10, 64)
 	var req UpdateDrinkParam
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+	if err := render.Bind(r, &req); err != nil {
+		render.Render(w, r, CreateErrorResponse(err))
+		return
 	}
 	drink, err := service.DrinkUpdate(loginUser, uint(workId), uint(drinkId), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -185,14 +154,12 @@ func DrinkUpdate(c *gin.Context) {
 	})
 }
 
-func DrinkList(c *gin.Context) {
+func DrinkList(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
 	workId, _ := strconv.ParseUint(c.Param("work"), 10, 64)
 	drinks, err := service.DrinkList(uint(workId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

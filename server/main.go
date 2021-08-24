@@ -1,16 +1,19 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"server/ctrl"
 	"server/mdlw"
+	"net/http"
 	"os"
 )
 
 func main() {
-	engine := gin.Default()
-	engine.Use(cors.New(cors.Config {
+	r := chi.NewRouter()
+	r.use(cors.Handler(cors.Options{
+		AllowOrigins: []string {
+			os.Getenv("CLIENT_BASE_URL"),
+		},
 		AllowMethods: []string{
 			"POST",
 			"GET",
@@ -26,11 +29,9 @@ func main() {
 			"X-CSRF-Token",
 			"Authorization",
 		},
-		AllowOrigins: []string {
-			os.Getenv("CLIENT_BASE_URL"),
-		},
 	}))
-	v1 := engine.Group("/v1")
+
+	v1 := r.Group("/v1")
 	{
 		v1.POST("/login", controller.Login)
 		v1.GET("/users", controller.UserList)
@@ -39,7 +40,7 @@ func main() {
 		v1.GET("/works/:work", controller.WorkRead)
 		v1.GET("/works/:work/drinks", controller.DrinkList)
 		v1.GET("/works/:work/drinks/:drink", controller.DrinkRead)
-		auth := v1.Group("/")
+		auto := v1.Group("/")
 		{
 			auth.Use(middleware.Auth)
 			auth.GET("/session", controller.Session)
@@ -53,5 +54,5 @@ func main() {
 			auth.PUT("/works/:work/drinks/:drink", controller.DrinkUpdate)
 		}
 	}
-	engine.Run(":8000")
+	http.ListenAndServe(":8000", r)
 }

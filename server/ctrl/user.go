@@ -6,12 +6,12 @@ import (
 	. "server/mdl"
 	"server/srvc"
 	"strconv"
-
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/render"
 )
 
-func UserRead(c *gin.Context) {
-	userIdStr := c.Param("user")
+func UserRead(w http.ResponseWriter, r *http.Request) {
+	userIdStr := chi.URLParam(r, "user")
 	userId, err := strconv.ParseUint(userIdStr, 10, 64)
 	var user User
 	if err != nil {
@@ -20,107 +20,69 @@ func UserRead(c *gin.Context) {
 		user, err = service.UserRead(uint(userId))
 	}
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Status(r, 404)
+		render.Render(w, r, CreateErrorResponse(err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H {
-		"status": "success",
-		"User": user,
-	})
+	render.Render(w, r, CreateUserResponse(user))
 }
 
-func UserUpdate(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func UserUpdate(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User) 
 	var req UpdateUserParam
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+	if err := render.Bind(r, &req); err != nil {
+		render.Render(r, w, CreateErrorResponse(err))
 	}
 	user, err := service.UserUpdate(loginUser, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(r, w, CreateErrorResponse(err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H {
-		"status": "success",
-		"User": user,
-	})
+	render.Render(r, w, CreateUserResponse(user))
 }
 
-func UserDelete(c *gin.Context) {
-	loginUser := GetLoginUser(c)
+func UserDelete(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	loginUser, _ := c.Value("LoginUser").(User) 
 	user, err := service.UserDelete(loginUser)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(r, w, CreateErrorResponse(err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H {
-		"status": "success",
-		"User": user,
-	})
+	render.Render(r, w, CreateUserResponse(user))
 }
 
-func UserList(c *gin.Context) {
+func UserList(w http.ResponseWriter, r *http.Request) {
 	users, err := service.UserList()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+		render.Render(r, w, CreateErrorResponse(err))
 	}else{
-		c.JSON(http.StatusOK, gin.H{
-			"status": "success",
-			"Users": users,
-		})
+		render.Render(r, w, CreateUsersResponse(users))
 	}
 }
 
-func Session(c *gin.Context) {
-	user, _ := c.Get("LoginUser")
-	user = user.(User)
-	c.JSON(http.StatusOK, gin.H{
-		"User": user,
-	})
+func Session(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	user, _ := c.Value("LoginUser").(User)
+	render.Render(r, w, CreateUserResponse(user))
 }
 
-func Login(c *gin.Context) {
+func Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginParams
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failure",
-			"error": err.Error(),
-		})
+	if err := render.Bind(r, &req); err != nil {
+		render.Render(r, w, CreateErrorResponse(err))
 		return
 	}
 	token, err := service.Login(req)
 	if err != nil {
 		switch err {
 			case exception.Unauthorized:
-				c.JSON(http.StatusUnauthorized, gin.H{
-					"status": "failure",
-					"error": err.Error(),
-				})
+				render.Render(r, w, CreateErrorResponse(err))
 			default:
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": "failure",
-					"error": err.Error(),
-				})
+				render.Render(r, w, CreateErrorResponse(err))
 		}
 	}else{
-		c.JSON(http.StatusOK, gin.H{
-			"status": "success",
-			"token": token,
-		})
+		render.Render(r, w, CreateTokenResponse(token))
 	}
 }

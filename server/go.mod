@@ -10,6 +10,8 @@ require (
 	github.com/fsnotify/fsnotify v1.5.0 // indirect
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-gonic/gin v1.7.4
+	github.com/go-chi/chi v1.5.4 // indirect
+	github.com/go-chi/cors v1.2.0 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect

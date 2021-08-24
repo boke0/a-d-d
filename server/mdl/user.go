@@ -77,12 +77,6 @@ type Auth struct {
 	jwt.StandardClaims
 }
 
-func GetLoginUser(c *gin.Context) User {
-	contextLoginUser, _ := c.Get("LoginUser")
-	loginUser, _ := contextLoginUser.(User)
-	return loginUser
-}
-
 func GithubAuth(code string) (string, error) {
 	payload := url.Values{}
 	payload.Add("client_id", github_client_id)
